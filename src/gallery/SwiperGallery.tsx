@@ -53,7 +53,7 @@ export const SwiperGallery: React.FC<SwiperGalleryProps> = ({
                 style={{
                   width: '100%',
                   height: 'auto',
-                  objectFit: 'cover',
+                  objectFit: 'contain',
                   display: 'block',
                 }}
               />

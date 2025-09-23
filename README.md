@@ -17,7 +17,7 @@ Peer deps:
 
 ```tsx
 "use client";
-import { SwiperGallery } from "ausdata-swiper";
+import { SwiperGallery, BeforeAfter } from "ausdata-swiper";
 import "swiper/css";
 
 export default function GalleryExample() {
@@ -36,6 +36,12 @@ export default function GalleryExample() {
     </div>
   );
 }
+```
+
+Before/After comparator:
+
+```tsx
+<BeforeAfter beforeSrc="/img/a.jpg" afterSrc="/img/b.jpg" initialPercent={50} />
 ```
 
 ### Props
