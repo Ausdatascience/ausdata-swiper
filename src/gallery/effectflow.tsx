@@ -175,11 +175,12 @@ const EffectFlow: React.FC<EffectFlowProps> = ({
     }
   }, [enableTouch, touchStartX, touchStartY, goToNext, goToPrev, isTransitioning]);
 
-  // Mouse drag handling with continuous dragging like Swiper
+  // Mouse drag handling with smoother continuous dragging
   const [isDragging, setIsDragging] = useState(false);
   const [dragStartX, setDragStartX] = useState(0);
   const [dragCurrentX, setDragCurrentX] = useState(0);
   const [isAllowDrag, setIsAllowDrag] = useState(false);
+  const [dragProgress, setDragProgress] = useState(0); // 添加拖拽进度状态
   
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
     if (!grabCursor || isTransitioning) return;
@@ -187,6 +188,7 @@ const EffectFlow: React.FC<EffectFlowProps> = ({
     setIsAllowDrag(false);
     setDragStartX(e.clientX);
     setDragCurrentX(e.clientX);
+    setDragProgress(0); // 重置拖拽进度
     e.preventDefault();
   }, [grabCursor, isTransitioning]);
 
@@ -196,36 +198,22 @@ const EffectFlow: React.FC<EffectFlowProps> = ({
     const deltaX = Math.abs(e.clientX - dragStartX);
     
     // Enable drag if moved enough to prevent accidental drags
-    if (deltaX > 5 && !isAllowDrag) {
+    if (deltaX > 3 && !isAllowDrag) { // 降低触发阈值，更敏感
       setIsAllowDrag(true);
     }
     
     if (isAllowDrag) {
+      const dragDistance = e.clientX - dragStartX;
       setDragCurrentX(e.clientX);
+      
+      // 计算拖拽进度，用于平滑过渡
+      const maxDragDistance = 150; // 最大拖拽距离
+      const progress = Math.max(-1, Math.min(1, dragDistance / maxDragDistance));
+      setDragProgress(progress);
+      
       e.preventDefault();
     }
   }, [isDragging, isTransitioning, dragStartX, isAllowDrag]);
-
-  const handleMouseUp = useCallback((e: React.MouseEvent) => {
-    if (!grabCursor || !isDragging || isTransitioning) return;
-    
-    const deltaX = e.clientX - dragStartX;
-    const deltaDistance = Math.abs(deltaX);
-    
-    setIsDragging(false);
-    setIsAllowDrag(false);
-    
-    // Determine slide change based on drag distance and speed
-    const threshold = 50; // Minimum pixels to trigger slide change
-    
-    if (deltaDistance >= threshold) {
-      if (deltaX > 0) {
-        goToPrev();
-      } else {
-        goToNext();
-      }
-    }
-  }, [grabCursor, isDragging, dragStartX, goToNext, goToPrev, isTransitioning]);
 
   // Keyboard handling
   useEffect(() => {
@@ -277,7 +265,14 @@ const EffectFlow: React.FC<EffectFlowProps> = ({
       }
       
       if (isAllowDrag) {
+        const dragDistance = e.clientX - dragStartX;
         setDragCurrentX(e.clientX);
+        
+        // 计算拖拽进度，用于平滑过渡
+        const maxDragDistance = 150;
+        const progress = Math.max(-1, Math.min(1, dragDistance / maxDragDistance));
+        setDragProgress(progress);
+        
         e.preventDefault();
       }
     };
@@ -290,9 +285,10 @@ const EffectFlow: React.FC<EffectFlowProps> = ({
       
       setIsDragging(false);
       setIsAllowDrag(false);
+      setDragProgress(0); // Reset drag progress
       
-      // More realistic threshold
-      const threshold = 50;
+      // More realistic threshold for smoother experience
+      const threshold = 30;
       
       if (deltaDistance >= threshold) {
         if (deltaX > 0) {
@@ -311,6 +307,121 @@ const EffectFlow: React.FC<EffectFlowProps> = ({
       document.removeEventListener('mouseup', handleGlobalMouseUp);
     };
   }, [isClient, isDragging, isAllowDrag, dragStartX, goToNext, goToPrev, isTransitioning]);
+
+  const handleMouseUp = useCallback((e: React.MouseEvent) => {
+    if (!grabCursor || !isDragging || isTransitioning) return;
+    
+    const deltaX = e.clientX - dragStartX;
+    const deltaDistance = Math.abs(deltaX);
+    
+    setIsDragging(false);
+    setIsAllowDrag(false);
+    setDragProgress(0); // 重置拖拽进度
+    
+    // 降低阈值，更容易触发切换，提供更流畅的体验
+    const threshold = 30; // 降低到30像素，更容易触发切换
+    
+    if (deltaDistance >= threshold) {
+      if (deltaX > 0) {
+        goToPrev();
+      } else {
+        goToNext();
+      }
+    }
+  }, [grabCursor, isDragging, dragStartX, goToNext, goToPrev, isTransitioning]);
+
+    // Keyboard handling
+    useEffect(() => {
+      if (!enableKeyboard || !isClient) return;
+
+      const handleKeyDown = (e: KeyboardEvent) => {
+        if (isTransitioning) return;
+        
+        switch (e.key) {
+          case 'ArrowLeft':
+            e.preventDefault();
+            goToPrev();
+            break;
+          case 'ArrowRight':
+            e.preventDefault();
+            goToNext();
+            break;
+          case ' ':
+            e.preventDefault();
+            // Toggle autoplay
+            if (enableAutoPlay) {
+              isPaused.current = !isPaused.current;
+              if (isPaused.current) {
+                clearAutoPlay();
+              } else {
+                startAutoPlay();
+              }
+            }
+            break;
+        }
+      };
+
+      window.addEventListener('keydown', handleKeyDown);
+      return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [enableKeyboard, isClient, goToNext, goToPrev, enableAutoPlay, clearAutoPlay, startAutoPlay, isTransitioning]);
+
+    // Global mouse events for smoother continuous drag
+    useEffect(() => {
+      if (!isClient || !isDragging) return;
+
+      const handleGlobalMouseMove = (e: MouseEvent) => {
+        if (!isDragging || isTransitioning) return;
+        
+        const deltaX = Math.abs(e.clientX - dragStartX);
+        
+        // Enable drag if moved enough
+        if (deltaX >= 5 && !isAllowDrag) {
+          setIsAllowDrag(true);
+        }
+        
+        if (isAllowDrag) {
+          const dragDistance = e.clientX - dragStartX;
+          setDragCurrentX(e.clientX);
+          
+          // Calculate drag progress for smooth transitions
+          const maxDragDistance = 150;
+          const progress = Math.max(-1, Math.min(1, dragDistance / maxDragDistance));
+          setDragProgress(progress);
+          
+          e.preventDefault();
+        }
+      };
+
+      const handleGlobalMouseUp = (e: MouseEvent) => {
+        if (!isDragging || isTransitioning) return;
+        
+        const deltaX = e.clientX - dragStartX;
+        const deltaDistance = Math.abs(deltaX);
+        
+        setIsDragging(false);
+        setIsAllowDrag(false);
+        setDragProgress(0); // Reset drag progress
+        
+        // More realistic threshold for smoother experience
+        const threshold = 30;
+        
+        if (deltaDistance >= threshold) {
+          if (deltaX > 0) {
+            goToPrev();
+          } else {
+            goToNext();
+          }
+        }
+      };
+
+      document.addEventListener('mousemove', handleGlobalMouseMove);
+      document.addEventListener('mouseup', handleGlobalMouseUp);
+
+      return () => {
+        document.removeEventListener('mousemove', handleGlobalMouseMove);
+        document.removeEventListener('mouseup', handleGlobalMouseUp);
+      };
+    }, [isClient, isDragging, isAllowDrag, dragStartX, goToNext, goToPrev, isTransitioning]);
 
   // Start/stop autoplay
   useEffect(() => {
@@ -351,8 +462,8 @@ const EffectFlow: React.FC<EffectFlowProps> = ({
         overflow: 'hidden',
           borderRadius: '0', // 移除容器圆角
         cursor: grabCursor ? (isDragging ? 'grabbing' : 'grab') : 'default',
-          backgroundColor: isDragging ? 'rgba(59, 130, 246, 0.1)' : 'transparent',
-          transition: 'background-color 0.2s ease',
+          backgroundColor: isDragging && isAllowDrag ? `rgba(59, 130, 246, ${0.05 + Math.abs(dragProgress) * 0.1})` : 'transparent',
+          transition: 'background-color 0.15s ease-out',
         userSelect: 'none',
       }}
       onMouseEnter={() => setIsHovering(true)}
@@ -390,12 +501,18 @@ const EffectFlow: React.FC<EffectFlowProps> = ({
           
           const isActive = centerOffset === 0;
           
-          // Calculate drag offset for dragging effect
+          // Calculate smooth drag offset based on progress
           let dragOffset = 0;
-          if (isDragging && isAllowDrag && isActive) {
-            dragOffset = dragCurrentX - dragStartX;
-            // Limit drag offset to prevent excessive movement
-            dragOffset = Math.max(-100, Math.min(100, dragOffset));
+          if (isDragging && isAllowDrag) {
+            if (isActive) {
+              // 当前卡片跟随鼠标拖拽
+              dragOffset = dragCurrentX - dragStartX;
+              dragOffset = Math.max(-100, Math.min(100, dragOffset));
+            } else {
+              // 侧边卡片根据拖拽进度产生平滑的预动效果
+              const baseOffset = dragProgress * 20; // 轻微跟随拖拽进度
+              dragOffset = centerOffset > 0 ? -baseOffset : baseOffset;
+            }
           }
           
           // Calculate transform values following Swiper Coverflow formula
@@ -451,8 +568,8 @@ const EffectFlow: React.FC<EffectFlowProps> = ({
                 transform: `translateX(${translateX}px) translateZ(${translateZ}px) rotateY(${rotateY}deg) scale(${scaleVal})`,
                 transformStyle: 'preserve-3d',
                 transition: isDragging && isAllowDrag 
-                  ? 'transform 0.1s linear' // Smooth dragging
-                  : `transform ${transitionDuration}ms cubic-bezier(0.25, 0.46, 0.45, 0.94)`, // Normal transitions
+                  ? 'transform 0.05s ease-out' // 更快的实时响应
+                  : `transform ${transitionDuration}ms cubic-bezier(0.4, 0.0, 0.2, 1)`, // 更平滑的缓动函数
                 zIndex: isActive ? 10 : 5 - distanceFromCenter,
                 opacity: distanceFromCenter <= 2 ? 1 : 0.3,
               }}
@@ -787,16 +904,23 @@ const EffectFlow: React.FC<EffectFlowProps> = ({
         @keyframes slideIn {
           from {
             opacity: 0;
-            transform: translateX(50px) rotateY(30deg);
+            transform: translateX(50px) rotateY(30deg) scale(0.95);
           }
           to {
             opacity: 1;
-            transform: translateX(0) rotateY(0deg);
+            transform: translateX(0) rotateY(0deg) scale(1);
           }
         }
         
         .swiper-slide {
-          animation: slideIn 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+          animation: slideIn 0.4s cubic-bezier(0.4, 0.0, 0.2, 1);
+          will-change: transform, opacity; /* 启用硬件加速 */
+        }
+        
+        .effect-flow-container {
+          /* 优化渲染性能 */
+          contain: layout style paint;
+          will-change: auto;
         }
       `}</style>
     </div>
