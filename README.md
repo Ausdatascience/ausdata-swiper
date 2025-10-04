@@ -80,6 +80,10 @@ export default function EffectFlowExample() {
         slideShadows={true}                 // 是否显示阴影效果（默认：true）
         spaceBetween={20}                   // 卡片间距（默认：20px）
         transitionDuration={500}            // 切换动画时长，毫秒（默认：600）
+        centerCardSize={320}                // 中间卡片大小，像素（默认：280）
+        centerCardScale={1.1}               // 中间卡片缩放比例（默认：1）
+        centerCardDepth={0}                 // 中间卡片Z轴位置（默认：0）
+        centerCardRotate={0}                // 中间卡片旋转角度（默认：0度）
         enableKeyboard={true}               // 启用键盘控制（默认：true）
         enableArrows={true}                 // 显示左右导航按钮（默认：true）
         enableDots={true}                   // 显示底部圆点导航（默认：true）
@@ -192,6 +196,12 @@ export default function LightboxExample() {
 - `slideShadows?: boolean` – show shadow effects (default: true)
 - `spaceBetween?: number` – card spacing in px (default: 20)
 
+**🎯 Center Card Controls:**
+- `centerCardSize?: number` – center card size in pixels (default: 280)
+- `centerCardScale?: number` – center card scale ratio (default: 1)
+- `centerCardDepth?: number` – center card Z-axis position (default: 0)
+- `centerCardRotate?: number` – center card rotation angle in degrees (default: 0)
+
 **🎮 Interaction Parameters:**
 - `enableKeyboard?: boolean` – enable keyboard control (default: true)
 - `enableArrows?: boolean` – show arrow navigation (default: true)
@@ -237,8 +247,9 @@ export default function LightboxExample() {
 - Pure CSS 3D transformations with 3-card layout
 - Hardware-accelerated 3D effects (center + left + right cards)
 - Configurable rotation angles and depth perception
-- Customizable card scaling and spacing
-- Touch/swipe drag support with visual feedback
+- **独立中间卡片控制** - 自定义大小、缩放、深度和旋转
+- Customizable side card scaling and spacing
+- Smooth drag interactions with visual feedback
 - Keyboard navigation (arrow keys, space for autoplay pause)
 - Auto-play with pause on hover
 - Navigation arrows and pagination dots

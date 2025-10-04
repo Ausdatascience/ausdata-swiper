@@ -29,6 +29,12 @@ export interface EffectFlowProps {
   scale?: number; // Scale for non-active slides
   slideShadows?: boolean; // Enable shadows between slides
   stretch?: number; // Stretch effect
+  
+  // Center card specific controls
+  centerCardSize?: number; // Center card size in pixels (default: 280)
+  centerCardScale?: number; // Center card scale ratio (default: 1)
+  centerCardDepth?: number; // Center card Z-axis position (default: 0)
+  centerCardRotate?: number; // Center card rotation angle (default: 0)
 }
 
 const EffectFlow: React.FC<EffectFlowProps> = ({
@@ -59,6 +65,11 @@ const EffectFlow: React.FC<EffectFlowProps> = ({
   scale = 0.8,
   slideShadows = true,
   stretch = 0,
+  // Center card specific
+  centerCardSize = 280,
+  centerCardScale = 1,
+  centerCardDepth = 0,
+  centerCardRotate = 0,
 }) => {
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
   const [isTransitioning, setIsTransitioning] = useState(false);
@@ -522,15 +533,16 @@ const EffectFlow: React.FC<EffectFlowProps> = ({
           let scaleVal = scale;
           
           if (isActive) {
-            // Center slide with drag offset
+            // Center slide with customizable properties
             translateX = dragOffset; // Keep drag offset for center slide
-            translateZ = 0;
-            rotateY = 0;
-            scaleVal = 1;
+            translateZ = centerCardDepth;
+            rotateY = centerCardRotate;
+            scaleVal = centerCardScale;
           } else {
             // Side slides - optimized for 3-card layout
-            const slideWidth = 280; // Smaller base slide width for better spacing
-            const baseTranslate = centerOffset * (slideWidth + spaceBetween);
+            const sideSlideWidth = 280; // Side slides maintain standard size
+            const slideWidth = centerCardSize; // Use center card size for positioning calculations
+            const baseTranslate = centerOffset * (slideWidth * 0.4 + spaceBetween);
             
             // Apply Coverflow transformations - fix rotation direction
             rotateY = -centerOffset * rotate * modifier;
@@ -561,10 +573,10 @@ const EffectFlow: React.FC<EffectFlowProps> = ({
                 position: 'absolute',
                 left: '50%',
                 top: '50%',
-                width: '280px',
-                height: '280px',
-                marginLeft: '-140px',
-                marginTop: '-140px',
+                width: `${isActive ? centerCardSize : 280}px`,
+                height: `${isActive ? centerCardSize : 280}px`,
+                marginLeft: `${isActive ? -(centerCardSize / 2) : -140}px`,
+                marginTop: `${isActive ? -(centerCardSize / 2) : -140}px`,
                 transform: `translateX(${translateX}px) translateZ(${translateZ}px) rotateY(${rotateY}deg) scale(${scaleVal})`,
                 transformStyle: 'preserve-3d',
                 transition: isDragging && isAllowDrag 
