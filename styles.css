@@ -1,6 +1,15 @@
 /* Base styles for ausdata-swiper components */
 @import url("swiper/css");
+@import url("swiper/css/navigation");
+@import url("swiper/css/pagination");
+@import url("swiper/css/zoom");
+@import url("swiper/css/free-mode");
+@import url("swiper/css/thumbs");
 
-:root {}
+:root {
+  --ausdata-lightbox-bg: rgba(0, 0, 0, 0.95);
+  --ausdata-lightbox-border: rgba(255, 255, 255, 0.1);
+  --ausdata-accent-color: #ff6b6b;
+}
 
 

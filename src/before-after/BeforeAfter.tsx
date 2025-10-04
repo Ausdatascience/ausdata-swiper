@@ -9,7 +9,7 @@ export interface BeforeAfterProps {
   aspectRatio?: string; // e.g. '4 / 3', '1 / 1'
 }
 
-export const BeforeAfter: React.FC<BeforeAfterProps> = ({
+const BeforeAfter: React.FC<BeforeAfterProps> = ({
   beforeSrc,
   afterSrc,
   label = 'Before / After',
@@ -89,8 +89,8 @@ export const BeforeAfter: React.FC<BeforeAfterProps> = ({
       role="region"
       aria-labelledby={id}
     >
-      <img src={afterSrc} alt={`${label} after`} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'contain', background: '#000', pointerEvents: 'none' }} />
-      <img src={beforeSrc} alt={`${label} before`} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'contain', background: '#000', clipPath: `inset(0 ${100 - percent}% 0 0)`, pointerEvents: 'none' }} />
+      <img src={afterSrc} alt={`${label} after`} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', background: '#000', pointerEvents: 'none' }} />
+      <img src={beforeSrc} alt={`${label} before`} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', background: '#000', clipPath: `inset(0 ${100 - percent}% 0 0)`, pointerEvents: 'none' }} />
       <input
         id={id}
         aria-label={`Compare ${label}`}
@@ -131,4 +131,4 @@ export const BeforeAfter: React.FC<BeforeAfterProps> = ({
   );
 };
 
-
+export default BeforeAfter;

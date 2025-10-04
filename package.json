@@ -1,5 +1,5 @@
 {
-  "name": "ausdata-swiper",
+  "name": "@ausdata/swiper",
   "version": "0.1.0",
   "description": "Lightweight Swiper-based gallery for Next.js/React",
   "type": "module",
@@ -27,16 +27,13 @@
     "lightbox"
   ],
   "scripts": {
-    "build": "tsup src/index.ts --dts --format esm --sourcemap --clean",
-    "dev": "tsup src/index.ts --dts --format esm --sourcemap --watch",
+    "build": "tsup",
+    "dev": "tsup --watch",
     "clean": "rimraf dist"
   },
   "peerDependencies": {
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
-  },
-  "dependencies": {
-    "swiper": "^11.2.10"
   },
   "devDependencies": {
     "@types/react": "^18.3.24",
