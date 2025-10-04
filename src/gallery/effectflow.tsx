@@ -415,8 +415,8 @@ const EffectFlow: React.FC<EffectFlowProps> = ({
             const slideWidth = 280; // Smaller base slide width for better spacing
             const baseTranslate = centerOffset * (slideWidth + spaceBetween);
             
-            // Apply Coverflow transformations
-            rotateY = centerOffset * rotate * modifier;
+            // Apply Coverflow transformations - fix rotation direction
+            rotateY = -centerOffset * rotate * modifier;
             translateZ = -depth + Math.abs(centerOffset) * 10;
             
             // Calculate horizontal position with Coverflow adjustments
