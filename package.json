@@ -1,7 +1,7 @@
 {
   "name": "@ausdata/swiper",
-  "version": "0.2.0",
-  "description": "Lightweight Swiper-based gallery for Next.js/React",
+  "version": "0.3.1",
+  "description": "Lightweight Swiper-based gallery with individual rotation control for Next.js/React",
   "type": "module",
   "main": "dist/index.js",
   "module": "dist/index.js",
@@ -24,7 +24,11 @@
     "gallery",
     "nextjs",
     "react",
-    "lightbox"
+    "lightbox",
+    "coverflow",
+    "3d",
+    "rotation",
+    "individual-control"
   ],
   "scripts": {
     "build": "tsup",

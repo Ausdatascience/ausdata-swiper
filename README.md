@@ -2,6 +2,8 @@
 
 A lightweight React component library featuring an image gallery with smooth transitions, auto-play functionality, and comprehensive accessibility support.
 
+🌟 **New Feature**: Individual Image Rotation Control - Set unique rotation angles for each image in EffectFlow component for creative 3D visual effects!
+
 ### Install
 
 ```bash
@@ -32,23 +34,23 @@ export default function GalleryExample() {
   return (
     <div style={{ maxWidth: 1000, margin: "0 auto", padding: 20 }}>
       <DefaultGallery
-        images={images}                     // 图片数组
-        initialIndex={0}                    // 初始显示索引（默认：0）
-        enableDots={true}                   // 显示底部圆点导航（默认：true）
-        enableArrows={true}                 // 显示左右导航按钮（默认：true）
-        enableAutoPlay={false}              // 自动播放开关（默认：false）
-        autoPlayInterval={3000}             // 自动播放间隔，毫秒（默认：3000）
-        transitionDuration={300}            // 切换动画时长，毫秒（默认：300）
-        pauseOnHover={true}                 // 悬停时暂停（默认：true）
-        loop={true}                         // 循环播放（默认：true）
-        height={400}                        // 组件高度（默认："16/9"）
-        aspectRatio={"16/9"}                // 宽高比（默认："16/9"）
-        showCounter={false}                 // 显示计数器（默认：false）
-        slidesPerView={1}                   // 每屏显示卡片数（默认：1）
-        spaceBetween={0}                    // 卡片间距（默认：0）
-        onIndexChange={(index) => console.log('Gallery changed to index:', index)}  // 索引变化回调
-        imageAlt={(index) => `Gallery image ${index + 1}`}  // alt文本生成函数
-        className="gallery-demo"            // 自定义样式类名
+        images={images}                     // Image array
+        initialIndex={0}                    // Initial display index (default: 0)
+        enableDots={true}                   // Show bottom dot navigation (default: true)
+        enableArrows={true}                 // Show left/right navigation buttons (default: true)
+        enableAutoPlay={false}              // Auto-play toggle (default: false)
+        autoPlayInterval={3000}             // Auto-play interval in milliseconds (default: 3000)
+        transitionDuration={300}            // Transition animation duration in ms (default: 300)
+        pauseOnHover={true}                 // Pause on hover (default: true)
+        loop={true}                         // Loop playback (default: true)
+        height={400}                        // Component height (default: "16/9")
+        aspectRatio={"16/9"}                // Aspect ratio (default: "16/9")
+        showCounter={false}                 // Show counter (default: false)
+        slidesPerView={1}                   // Number of cards per screen (default: 1)
+        spaceBetween={0}                    // Card spacing (default: 0)
+        onIndexChange={(index) => console.log('Gallery changed to index:', index)}  // Index change callback
+        imageAlt={(index) => `Gallery image ${index + 1}`}  // Alt text generator function
+        className="gallery-demo"            // Custom CSS class name
       />
     </div>
   );
@@ -71,28 +73,76 @@ export default function EffectFlowExample() {
   return (
     <div style={{ maxWidth: 1000, margin: "0 auto" }}>
       <EffectFlow
-        images={images}                      // 图片数组
-        initialIndex={0}                     // 初始显示索引（默认：0）
-        height={350}                        // 组件高度（默认：350）
-        rotate={45}                         // 侧边卡片旋转角度（默认：50度）
-        depth={100}                         // 3D深度距离，控制远近感（默认：60）
-        scale={0.8}                         // 侧边卡片缩放比例（默认：0.85）
-        slideShadows={true}                 // 是否显示阴影效果（默认：true）
-        spaceBetween={20}                   // 卡片间距（默认：20px）
-        transitionDuration={500}            // 切换动画时长，毫秒（默认：600）
-        centerCardSize={320}                // 中间卡片大小，像素（默认：280）
-        centerCardScale={1.1}               // 中间卡片缩放比例（默认：1）
-        centerCardDepth={0}                 // 中间卡片Z轴位置（默认：0）
-        centerCardRotate={0}                // 中间卡片旋转角度（默认：0度）
-        enableKeyboard={true}               // 启用键盘控制（默认：true）
-        enableArrows={true}                 // 显示左右导航按钮（默认：true）
-        enableDots={true}                   // 显示底部圆点导航（默认：true）
-        enableAutoPlay={false}              // 自动播放开关（默认：false）
-        autoPlayInterval={3000}             // 自动播放间隔，毫秒（默认：3000）
-        pauseOnHover={true}                 // 悬停时暂停（默认：true）
-        loop={true}                         // 循环播放（默认：true）
-        showCounter={false}                 // 显示计数器（默认：false）
+        images={images}                      // Image array
+        initialIndex={0}                     // Initial display index (default: 0)
+        height={350}                        // Component height (default: 350)
+        rotate={45}                         // Global default side card rotation angle (default: 50 degrees)
+        individualRotate={[20, 45, 60, 25]} // 🔥 Individual rotation angles for each image's side position
+        depth={100}                         // 3D depth distance, controls depth perception (default: 60)
+        scale={0.8}                         // Side card scaling ratio (default: 0.85)
+        slideShadows={true}                 // Show shadow effects (default: true)
+        spaceBetween={20}                   // Card spacing (default: 20px)
+        transitionDuration={500}            // Transition animation duration in ms (default: 600)
+        centerCardSize={320}                // Center card size in pixels (default: 280)
+        centerCardScale={1.1}               // Center card scaling ratio (default: 1)
+        centerCardDepth={0}                 // Center card Z-axis position (default: 0)
+        centerCardRotate={0}                // Global default center card rotation angle (default: 0 degrees)
+        centerCardRotates={[10, -15, 5, -10]} // 🔥 Individual rotation angles for each image when centered
+        visibleCardCount={5}                // Number of cards to display (default: 3)
+        borderRadius={8}                    // Image border radius (default: 3)
+        containerWidth="90%"                // Container width (default: "100%")
+        showStarIndicator={true}           // Show star indicator (default: true)
+        enableKeyboard={true}               // Enable keyboard control (default: true)
+        enableArrows={true}                 // Show left/right navigation buttons (default: true)
+        enableDots={true}                   // Show bottom dot navigation (default: true)
+        enableAutoPlay={false}              // Auto-play toggle (default: false)
+        autoPlayInterval={3000}             // Auto-play interval in ms (default: 3000)
+        pauseOnHover={true}                 // Pause on hover (default: true)
+        loop={true}                         // Loop playback (default: true)
+        showCounter={false}                 // Show counter (default: false)
         onIndexChange={(index) => console.log('EffectFlow changed to:', index)}
+      />
+    </div>
+  );
+}
+```
+
+#### Individual Image Rotation Control Example
+
+```tsx
+import { EffectFlow } from "@ausdata/swiper";
+
+export default function IndividualRotationExample() {
+  const images = ["/img/1.jpg", "/img/2.jpg", "/img/3.jpg", "/img/4.jpg"];
+
+  return (
+    <div>
+      <EffectFlow
+        images={images}
+        // 🔥 Individual side rotation: each image has different rotation angles
+        individualRotate={[20, 45, 60, 25]}        
+        // 🔥 Individual center rotation: each image has different angles when centered
+        centerCardRotates={[10, -15, 5, -10]}      
+        // Global default values (used when individual images are not specified)
+        rotate={35}                                
+        centerCardRotate={0}                       
+        height={400}
+        depth={80}
+        scale={0.8}
+        slideShadows={true}
+        visibleCardCount={5}
+        borderRadius={12}
+        containerWidth="90%"
+        showStarIndicator={true}
+        centerCardSize={320}
+        centerCardScale={1.1}
+        centerCardDepth={60}
+        transitionDuration={600}
+        spaceBetween={120}
+        enableKeyboard={true}
+        enableArrows={true}
+        enableDots={true}
+        showCounter={true}
       />
     </div>
   );
@@ -108,12 +158,12 @@ export default function BeforeAfterExample() {
   return (
     <div style={{ maxWidth: 800, margin: "0 auto" }}>
       <BeforeAfter 
-        beforeSrc="/img/before.jpg"        // "前面"图片路径
-        afterSrc="/img/after.jpg"           // "后面"图片路径
-        initialPercent={50}                 // 初始分割线位置百分比（默认：50）
-        label="Comparison"                  // 对比标签文本
-        className="before-after-demo"       // 自定义样式类名
-        aspectRatio="4/3"                   // 宽高比（可选）
+        beforeSrc="/img/before.jpg"        // "Before" image path
+        afterSrc="/img/after.jpg"           // "After" image path
+        initialPercent={50}                 // Initial divider position percentage (default: 50)
+        label="Comparison"                  // Comparison label text
+        className="before-after-demo"       // Custom CSS class name
+        aspectRatio="4/3"                   // Aspect ratio (optional)
       />
     </div>
   );
@@ -137,14 +187,14 @@ export default function LightboxExample() {
       </button>
       
       <Lightbox
-        isOpen={isOpen}                      // 控制模态框显示/隐藏
-        onClose={() => setIsOpen(false)}      // 关闭回调函数
-        images={images}                       // 图片数组
-        currentIndex={currentIndex}           // 当前活跃图片索引
-        onIndexChange={setCurrentIndex}       // 索引变化回调函数
-        title="Photo Gallery"                 // 标题（可选）
-        subtitle="Beautiful images"           // 副标题（可选）
-        description="Browse through our collection"  // 描述文本（可选）
+        isOpen={isOpen}                      // Control modal show/hide
+        onClose={() => setIsOpen(false)}      // Close callback function
+        images={images}                       // Image array
+        currentIndex={currentIndex}           // Current active image index
+        onIndexChange={setCurrentIndex}       // Index change callback function
+        title="Photo Gallery"                 // Title (optional)
+        subtitle="Beautiful images"           // Subtitle (optional)
+        description="Browse through our collection"  // Description text (optional)
       />
     </>
   );
@@ -155,30 +205,30 @@ export default function LightboxExample() {
 
 #### DefaultGallery Component
 
-**📋 基础参数:**
-- `images: string[]` – 图片URL数组（必需）
-- `initialIndex?: number` – 初始显示索引（默认：0）
-- `onIndexChange?: (index: number) => void` – 活跃图片变化回调
-- `className?: string` – 自定义CSS类名
-- `imageAlt?: (index: number) => string` – 每张图片的alt文本生成器
+**📋 Basic Parameters:**
+- `images: string[]` – image URL array (required)
+- `initialIndex?: number` – initial display index (default: 0)
+- `onIndexChange?: (index: number) => void` – callback when active image changes
+- `className?: string` – custom CSS class name
+- `imageAlt?: (index: number) => string` – alt text generator per image
 
-**🎮 导航控制:**
-- `enableDots?: boolean` – 显示圆点导航（默认：true）
-- `enableArrows?: boolean` – 显示箭头导航（默认：true）
-- `enableAutoPlay?: boolean` – 自动播放开关（默认：false）
-- `autoPlayInterval?: number` – 自动播放间隔，毫秒（默认：3000）
-- `pauseOnHover?: boolean` – 悬停时暂停（默认：true）
-- `loop?: boolean` – 无限循环模式（默认：true）
+**🎮 Navigation Control:**
+- `enableDots?: boolean` – show dot navigation (default: true)
+- `enableArrows?: boolean` – show arrow navigation (default: true)
+- `enableAutoPlay?: boolean` – auto-play toggle (default: false)
+- `autoPlayInterval?: number` – auto-play interval in ms (default: 3000)
+- `pauseOnHover?: boolean` – pause on hover (default: true)
+- `loop?: boolean` – infinite loop mode (default: true)
 
-**🎨 布局样式:**
-- `height?: string | number` – 自定义高度（如："500px" 或 500）
-- `aspectRatio?: string` – 宽高比（默认："16/9"）
-- `slidesPerView?: number` – 每屏显示图片数（默认：1）
-- `spaceBetween?: number` – 图片间距，像素（默认：0）
-- `showCounter?: boolean` – 显示计数器（默认：false）
+**🎨 Layout & Styling:**
+- `height?: string | number` – custom height (e.g.: "500px" or 500)
+- `aspectRatio?: string` – aspect ratio (default: "16/9")
+- `slidesPerView?: number` – number of images per screen (default: 1)
+- `spaceBetween?: number` – image spacing in pixels (default: 0)
+- `showCounter?: boolean` – show counter (default: false)
 
-**⚙️ 动画设置:**
-- `transitionDuration?: number` – 过渡动画时长，毫秒（默认：300）
+**⚙️ Animation Settings:**
+- `transitionDuration?: number` – transition animation duration in ms (default: 300)
 
 #### EffectFlow Component (CoverFlow-style 3D)
 
@@ -190,7 +240,8 @@ export default function LightboxExample() {
 
 **🎨 3D Visual Parameters:**
 - `height?: string | number` – container height (default: 350)
-- `rotate?: number` – side card rotation angle in degrees (default: 50)
+- `rotate?: number` – global default side card rotation angle in degrees (default: 50)
+- `individualRotate?: number[]` – 🔥 individual rotation angles for each image when positioned as side cards
 - `depth?: number` – 3D depth distance, controls depth perception (default: 60)
 - `scale?: number` – side card scale ratio (default: 0.85)
 - `slideShadows?: boolean` – show shadow effects (default: true)
@@ -200,7 +251,8 @@ export default function LightboxExample() {
 - `centerCardSize?: number` – center card size in pixels (default: 280)
 - `centerCardScale?: number` – center card scale ratio (default: 1)
 - `centerCardDepth?: number` – center card Z-axis position (default: 0)
-- `centerCardRotate?: number` – center card rotation angle in degrees (default: 0)
+- `centerCardRotate?: number` – global default center card rotation angle in degrees (default: 0)
+- `centerCardRotates?: number[]` – 🔥 individual rotation angles for each image when positioned as center card
 
 **🎮 Interaction Parameters:**
 - `enableKeyboard?: boolean` – enable keyboard control (default: true)
@@ -212,34 +264,40 @@ export default function LightboxExample() {
 - `loop?: boolean` – enable infinite loop (default: true)
 - `showCounter?: boolean` – show image counter (default: false)
 
+**📱 Display Controls:**
+- `containerWidth?: string` – container width (default: "100%")
+- `visibleCardCount?: number` – number of cards to display (default: 3)
+- `borderRadius?: number` – card border radius in pixels (default: 3)
+- `showStarIndicator?: boolean` – show star indicator on center card (default: true)
+
 **⚙️ Animation Parameters:**
 - `transitionDuration?: number` – transition duration in ms (default: 600)
 
 #### BeforeAfter Component
 
-**📋 基础参数:**
-- `beforeSrc: string` – "之前"图片路径（必需）
-- `afterSrc: string` – "之后"图片路径（必需）
-- `label?: string` – 比较器标签文本
-- `className?: string` – 自定义CSS类名
+**📋 Basic Parameters:**
+- `beforeSrc: string` – "Before" image path (required)
+- `afterSrc: string` – "After" image path (required)
+- `label?: string` – Comparator label text
+- `className?: string` – Custom CSS class name
 
-**🎨 样式布局:**
-- `initialPercent?: number` – 初始分割线位置百分比（默认：50）
-- `aspectRatio?: string` – CSS宽高比（如："16/9"）
+**🎨 Style Layout:**
+- `initialPercent?: number` – Initial divider position percentage (default: 50)
+- `aspectRatio?: string` – CSS aspect ratio (e.g.: "16/9")
 
 #### Lightbox Component
 
-**📋 核心参数:**
-- `isOpen: boolean` – 控制模态框显示/隐藏状态
-- `onClose: () => void` – 关闭回调函数
-- `images: string[]` – 图片URL数组
-- `currentIndex: number` – 当前活跃图片索引
-- `onIndexChange: (index: number) => void` – 索引变化回调函数
+**📋 Core Parameters:**
+- `isOpen: boolean` – Controls modal display/hide state
+- `onClose: () => void` – Close callback function
+- `images: string[]` – Image URL array
+- `currentIndex: number` – Current active image index
+- `onIndexChange: (index: number) => void` – Index change callback function
 
-**📝 内容选项:**
-- `title?: string` – 标题（可选）
-- `subtitle?: string` – 副标题（可选）
-- `description?: string` – 描述文本（可选）
+**📝 Content Options:**
+- `title?: string` – Title (optional)
+- `subtitle?: string` – Subtitle (optional)
+- `description?: string` – Description text (optional)
 
 ### Features
 
@@ -247,8 +305,12 @@ export default function LightboxExample() {
 - Pure CSS 3D transformations with 3-card layout
 - Hardware-accelerated 3D effects (center + left + right cards)
 - Configurable rotation angles and depth perception
-- **独立中间卡片控制** - 自定义大小、缩放、深度和旋转
+- 🔥 **Individual Image Rotation Control** - unique rotation angles for each image
+- 🔥 **Individual Center Card Rotation** - distinct center rotation for each image
+- **Independent center card controls** - Customize size, scale, depth, and rotation
 - Customizable side card scaling and spacing
+- Enhanced display controls (container width, visible card count, border radius)
+- Star indicator on center cards
 - Smooth drag interactions with visual feedback
 - Keyboard navigation (arrow keys, space for autoplay pause)
 - Auto-play with pause on hover

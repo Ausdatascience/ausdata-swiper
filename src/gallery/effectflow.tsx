@@ -23,7 +23,8 @@ export interface EffectFlowProps {
   enableTouch?: boolean;
   
   // CoverFlow specific props (matching Swiper Coverflow)
-  rotate?: number; // Rotation angle for side slides
+  rotate?: number; // Global rotation angle for side slides (default for all)
+  individualRotate?: number[]; // Individual rotation angles for each image
   depth?: number; // Distance between slides
   modifier?: number; // Multiplier for transform effects
   scale?: number; // Scale for non-active slides
@@ -35,6 +36,13 @@ export interface EffectFlowProps {
   centerCardScale?: number; // Center card scale ratio (default: 1)
   centerCardDepth?: number; // Center card Z-axis position (default: 0)
   centerCardRotate?: number; // Center card rotation angle (default: 0)
+  centerCardRotates?: number[]; // Individual center card rotation angles
+  
+  // Additional display controls
+  containerWidth?: string; // Container width (default: "100%")
+  visibleCardCount?: number; // Number of cards to display (default: 3)
+  borderRadius?: number; // Card border radius in pixels (default: 3)
+  showStarIndicator?: boolean; // Show star indicator on center card (default: true)
 }
 
 const EffectFlow: React.FC<EffectFlowProps> = ({
@@ -60,6 +68,7 @@ const EffectFlow: React.FC<EffectFlowProps> = ({
   enableTouch = true,
   // CoverFlow specific
   rotate = 50,
+  individualRotate,
   depth = 60,
   modifier = 1,
   scale = 0.8,
@@ -70,6 +79,12 @@ const EffectFlow: React.FC<EffectFlowProps> = ({
   centerCardScale = 1,
   centerCardDepth = 0,
   centerCardRotate = 0,
+  centerCardRotates,
+  // Additional display controls
+  containerWidth = "100%",
+  visibleCardCount = 3,
+  borderRadius = 3,
+  showStarIndicator = true,
 }) => {
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
   const [isTransitioning, setIsTransitioning] = useState(false);
@@ -191,7 +206,7 @@ const EffectFlow: React.FC<EffectFlowProps> = ({
   const [dragStartX, setDragStartX] = useState(0);
   const [dragCurrentX, setDragCurrentX] = useState(0);
   const [isAllowDrag, setIsAllowDrag] = useState(false);
-  const [dragProgress, setDragProgress] = useState(0); // 添加拖拽进度状态
+  const [dragProgress, setDragProgress] = useState(0); // Add drag progress state
   
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
     if (!grabCursor || isTransitioning) return;
@@ -199,7 +214,7 @@ const EffectFlow: React.FC<EffectFlowProps> = ({
     setIsAllowDrag(false);
     setDragStartX(e.clientX);
     setDragCurrentX(e.clientX);
-    setDragProgress(0); // 重置拖拽进度
+    setDragProgress(0); // Reset drag progress
     e.preventDefault();
   }, [grabCursor, isTransitioning]);
 
@@ -209,7 +224,7 @@ const EffectFlow: React.FC<EffectFlowProps> = ({
     const deltaX = Math.abs(e.clientX - dragStartX);
     
     // Enable drag if moved enough to prevent accidental drags
-    if (deltaX > 3 && !isAllowDrag) { // 降低触发阈值，更敏感
+    if (deltaX > 3 && !isAllowDrag) { // Lower trigger threshold for more sensitivity
       setIsAllowDrag(true);
     }
     
@@ -217,8 +232,8 @@ const EffectFlow: React.FC<EffectFlowProps> = ({
       const dragDistance = e.clientX - dragStartX;
       setDragCurrentX(e.clientX);
       
-      // 计算拖拽进度，用于平滑过渡
-      const maxDragDistance = 150; // 最大拖拽距离
+      // Calculate drag progress for smooth transitions
+      const maxDragDistance = 150; // Maximum drag distance
       const progress = Math.max(-1, Math.min(1, dragDistance / maxDragDistance));
       setDragProgress(progress);
       
@@ -279,7 +294,7 @@ const EffectFlow: React.FC<EffectFlowProps> = ({
         const dragDistance = e.clientX - dragStartX;
         setDragCurrentX(e.clientX);
         
-        // 计算拖拽进度，用于平滑过渡
+        // Calculate drag progress for smooth transitions
         const maxDragDistance = 150;
         const progress = Math.max(-1, Math.min(1, dragDistance / maxDragDistance));
         setDragProgress(progress);
@@ -327,10 +342,10 @@ const EffectFlow: React.FC<EffectFlowProps> = ({
     
     setIsDragging(false);
     setIsAllowDrag(false);
-    setDragProgress(0); // 重置拖拽进度
+    setDragProgress(0); // Reset drag progress
     
-    // 降低阈值，更容易触发切换，提供更流畅的体验
-    const threshold = 30; // 降低到30像素，更容易触发切换
+    // Lower threshold for easier triggering and smoother experience
+    const threshold = 30; // Reduced to 30 pixels for easier triggering
     
     if (deltaDistance >= threshold) {
       if (deltaX > 0) {
@@ -469,9 +484,10 @@ const EffectFlow: React.FC<EffectFlowProps> = ({
       ref={containerRef}
       className={`effect-flow-container group relative w-full ${className}`}
       style={{
+        width: containerWidth,
         height: containerHeightStyle,
         overflow: 'hidden',
-          borderRadius: '0', // 移除容器圆角
+        borderRadius: '0', // Remove container border radius
         cursor: grabCursor ? (isDragging ? 'grabbing' : 'grab') : 'default',
           backgroundColor: isDragging && isAllowDrag ? `rgba(59, 130, 246, ${0.05 + Math.abs(dragProgress) * 0.1})` : 'transparent',
           transition: 'background-color 0.15s ease-out',
@@ -507,8 +523,9 @@ const EffectFlow: React.FC<EffectFlowProps> = ({
           const centerOffset = index - currentIndex;
           const distanceFromCenter = Math.abs(centerOffset);
           
-          // Only render visible slides - only show 1 slide on each side (3 total)
-          if (distanceFromCenter > 1) return null;
+          // Only render visible slides based on visibleCardCount
+          const maxDistance = Math.floor((visibleCardCount - 1) / 2);
+          if (distanceFromCenter > maxDistance) return null;
           
           const isActive = centerOffset === 0;
           
@@ -516,12 +533,12 @@ const EffectFlow: React.FC<EffectFlowProps> = ({
           let dragOffset = 0;
           if (isDragging && isAllowDrag) {
             if (isActive) {
-              // 当前卡片跟随鼠标拖拽
+              // Current card follows mouse drag
               dragOffset = dragCurrentX - dragStartX;
               dragOffset = Math.max(-100, Math.min(100, dragOffset));
             } else {
-              // 侧边卡片根据拖拽进度产生平滑的预动效果
-              const baseOffset = dragProgress * 20; // 轻微跟随拖拽进度
+              // Side cards generate smooth pre-motion effects based on drag progress
+              const baseOffset = dragProgress * 20; // Slight following of drag progress
               dragOffset = centerOffset > 0 ? -baseOffset : baseOffset;
             }
           }
@@ -536,7 +553,9 @@ const EffectFlow: React.FC<EffectFlowProps> = ({
             // Center slide with customizable properties
             translateX = dragOffset; // Keep drag offset for center slide
             translateZ = centerCardDepth;
-            rotateY = centerCardRotate;
+            rotateY = centerCardRotates && centerCardRotates[index] !== undefined 
+              ? centerCardRotates[index] 
+              : centerCardRotate;
             scaleVal = centerCardScale;
           } else {
             // Side slides - optimized for 3-card layout
@@ -544,13 +563,16 @@ const EffectFlow: React.FC<EffectFlowProps> = ({
             const slideWidth = centerCardSize; // Use center card size for positioning calculations
             const baseTranslate = centerOffset * (slideWidth * 0.4 + spaceBetween);
             
-            // Apply Coverflow transformations - fix rotation direction
-            rotateY = -centerOffset * rotate * modifier;
+            // Apply Coverflow transformations - use individual rotation or global
+            const imageRotateAngle = individualRotate && individualRotate[index] !== undefined 
+              ? individualRotate[index] 
+              : rotate;
+            rotateY = -centerOffset * imageRotateAngle * modifier;
             translateZ = -depth + Math.abs(centerOffset) * 10;
             
             // Calculate horizontal position with Coverflow adjustments
             const rotateRad = Math.abs(rotateY) * Math.PI / 180;
-            const rotatedOffset = slideWidth / 3 * Math.sin(rotateRad); // 减少偏移量
+            const rotatedOffset = slideWidth / 3 * Math.sin(rotateRad); // Reduce offset amount
             
             // Add drag influence to side slides
             const sideDragInfluence = isDragging && isAllowDrag ? dragOffset * 0.3 : 0;
@@ -580,8 +602,8 @@ const EffectFlow: React.FC<EffectFlowProps> = ({
                 transform: `translateX(${translateX}px) translateZ(${translateZ}px) rotateY(${rotateY}deg) scale(${scaleVal})`,
                 transformStyle: 'preserve-3d',
                 transition: isDragging && isAllowDrag 
-                  ? 'transform 0.05s ease-out' // 更快的实时响应
-                  : `transform ${transitionDuration}ms cubic-bezier(0.4, 0.0, 0.2, 1)`, // 更平滑的缓动函数
+                  ? 'transform 0.05s ease-out' // Faster real-time response
+                  : `transform ${transitionDuration}ms cubic-bezier(0.4, 0.0, 0.2, 1)`, // Smoother easing function
                 zIndex: isActive ? 10 : 5 - distanceFromCenter,
                 opacity: distanceFromCenter <= 2 ? 1 : 0.3,
               }}
@@ -592,11 +614,11 @@ const EffectFlow: React.FC<EffectFlowProps> = ({
                 style={{
                   width: '100%',
                   height: '100%',
-                  borderRadius: '0', // 移除圆角
+                  borderRadius: `${borderRadius}px`, // Controllable border radius
                   overflow: 'hidden',
                   background: '#000',
                   boxShadow: 'none',
-                  // 移除 border
+                  // Remove border
                   cursor: isActive ? 'default' : 'pointer',
                 }}
               >
@@ -616,7 +638,7 @@ const EffectFlow: React.FC<EffectFlowProps> = ({
                 />
                 
                 {/* Active indicator */}
-                {isActive && (
+                {isActive && showStarIndicator && (
                   <div 
                     style={{
                       position: 'absolute',
@@ -627,7 +649,7 @@ const EffectFlow: React.FC<EffectFlowProps> = ({
                       fontSize: '12px',
                       fontWeight: 'bold',
                       padding: '4px 8px',
-                      borderRadius: '0', // 移除圆角
+                      borderRadius: `${borderRadius}px`, // Use same border radius
                       boxShadow: 'none',
                     }}>
                     ★
@@ -643,7 +665,7 @@ const EffectFlow: React.FC<EffectFlowProps> = ({
                   color: 'white',
                   fontSize: '11px',
                   padding: '2px 6px',
-                  borderRadius: '0', // 移除圆角
+                  borderRadius: `${borderRadius}px`, // 使用相同的圆角
                   fontWeight: '500',
                 }}>
                   {index + 1}
@@ -662,7 +684,7 @@ const EffectFlow: React.FC<EffectFlowProps> = ({
                       width: '100%',
                       height: '100%',
                       background: 'linear-gradient(90deg, rgba(0,0,0,0.3) 0%, transparent 50%)',
-                      borderRadius: '0', // 移除阴影圆角
+                      borderRadius: `${borderRadius}px`, // Use same border radius
                       pointerEvents: 'none',
                       zIndex: -1,
                       opacity: centerOffset < 0 ? 0.8 : 0,
@@ -677,7 +699,7 @@ const EffectFlow: React.FC<EffectFlowProps> = ({
                       width: '100%',
                       height: '100%',
                       background: 'linear-gradient(-90deg, rgba(0,0,0,0.3) 0%, transparent 50%)',
-                      borderRadius: '0', // 移除阴影圆角
+                      borderRadius: `${borderRadius}px`, // Use same border radius
                       pointerEvents: 'none',
                       zIndex: -1,
                       opacity: centerOffset > 0 ? 0.8 : 0,
@@ -856,28 +878,7 @@ const EffectFlow: React.FC<EffectFlowProps> = ({
           backdropFilter: 'blur(10px)',
         }}
       >
-        🎨 Effect Flow (纯CSS 3D)
-      </div>
-
-      {/* Drag hint */}
-      <div
-        style={{
-          position: 'absolute',
-          bottom: '60px',
-          left: '50%',
-          transform: 'translateX(-50%)',
-          backgroundColor: 'rgba(0, 0, 0, 0.7)',
-          color: 'white',
-          padding: '8px 16px',
-          borderRadius: '0',
-          fontSize: '12px',
-          fontWeight: '500',
-          zIndex: 15,
-          opacity: isHovering ? 1 : 0.6,
-          transition: 'opacity 0.3s ease',
-        }}
-      >
-        🖱️ 拖拽滑动或 ↑↓ 键导航
+        🎨 Effect Flow (Pure CSS 3D)
       </div>
       
       {/* CSS mimicking Swiper Coverflow */}
@@ -926,11 +927,11 @@ const EffectFlow: React.FC<EffectFlowProps> = ({
         
         .swiper-slide {
           animation: slideIn 0.4s cubic-bezier(0.4, 0.0, 0.2, 1);
-          will-change: transform, opacity; /* 启用硬件加速 */
+          will-change: transform, opacity; /* Enable hardware acceleration */
         }
         
         .effect-flow-container {
-          /* 优化渲染性能 */
+          /* Optimize rendering performance */
           contain: layout style paint;
           will-change: auto;
         }
