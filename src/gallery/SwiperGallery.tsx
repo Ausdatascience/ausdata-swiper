@@ -35,7 +35,10 @@ const SwiperGallery: React.FC<SwiperGalleryProps> = ({
   if (!images?.length) return null;
 
   return (
-    <div className={className}>
+    <div className={className} style={{ border: '2px solid #ff6b6b', borderRadius: '8px', padding: '10px' }}>
+      <p style={{ color: '#ff6b6b', fontWeight: 'bold', marginBottom: '10px' }}>
+        🔥 开发模式: Gallery组件已更新!
+      </p>
       {isClient && (
         <Swiper
           onSwiper={setSwiperRef}
