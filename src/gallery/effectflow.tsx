@@ -385,8 +385,8 @@ const EffectFlow: React.FC<EffectFlowProps> = ({
           const centerOffset = index - currentIndex;
           const distanceFromCenter = Math.abs(centerOffset);
           
-          // Only render visible slides (same logic as Swiper)
-          if (distanceFromCenter > 3) return null;
+          // Only render visible slides - only show 1 slide on each side (3 total)
+          if (distanceFromCenter > 1) return null;
           
           const isActive = centerOffset === 0;
           
@@ -411,9 +411,9 @@ const EffectFlow: React.FC<EffectFlowProps> = ({
             rotateY = 0;
             scaleVal = 1;
           } else {
-            // Side slides - mimic Swiper Coverflow math  
-            const slideWidth = 320; // Base slide width
-            const baseTranslate = centerOffset * (slideWidth * 0.3 + spaceBetween); // 进一步减少间距到原来的一半
+            // Side slides - optimized for 3-card layout
+            const slideWidth = 280; // Smaller base slide width for better spacing
+            const baseTranslate = centerOffset * (slideWidth + spaceBetween);
             
             // Apply Coverflow transformations
             rotateY = centerOffset * rotate * modifier;
@@ -432,14 +432,8 @@ const EffectFlow: React.FC<EffectFlowProps> = ({
               translateX = baseTranslate + rotatedOffset + sideDragInfluence;
             }
             
-            // Adjust scale based on distance
-            if (distanceFromCenter === 1) {
-              scaleVal = scale;
-            } else if (distanceFromCenter === 2) {
-              scaleVal = scale * 0.8;
-            } else {
-              scaleVal = scale * 0.6;
-            }
+            // Adjust scale based on distance - simplified for 3-card layout
+            scaleVal = scale;
           }
           
           return (
@@ -450,10 +444,10 @@ const EffectFlow: React.FC<EffectFlowProps> = ({
                 position: 'absolute',
                 left: '50%',
                 top: '50%',
-                width: '320px',
-                height: '320px',
-                marginLeft: '-160px',
-                marginTop: '-160px',
+                width: '280px',
+                height: '280px',
+                marginLeft: '-140px',
+                marginTop: '-140px',
                 transform: `translateX(${translateX}px) translateZ(${translateZ}px) rotateY(${rotateY}deg) scale(${scaleVal})`,
                 transformStyle: 'preserve-3d',
                 transition: isDragging && isAllowDrag 
