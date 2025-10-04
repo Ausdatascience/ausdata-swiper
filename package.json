@@ -41,5 +41,8 @@
     "rimraf": "^5.0.10",
     "tsup": "^8.5.0",
     "typescript": "^5.9.2"
+  },
+  "dependencies": {
+    "@ausdata/swiper": "file:ausdata-swiper-0.1.0.tgz"
   }
 }
