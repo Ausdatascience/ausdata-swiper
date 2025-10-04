@@ -19,7 +19,7 @@ Peer deps:
 
 ```tsx
 "use client";
-import { Gallery, BeforeAfter, Lightbox } from "ausdata-swiper";
+import { Gallery, CoverFlow, BeforeAfter, Lightbox } from "ausdata-swiper";
 
 export default function GalleryExample() {
   const images = [
@@ -40,6 +40,36 @@ export default function GalleryExample() {
         onIndexChange={(index) => console.log('Gallery changed to index:', index)}
         imageAlt={(index) => `Gallery image ${index + 1}`}
         className="gallery-demo"
+      />
+    </div>
+  );
+}
+```
+
+#### CoverFlow Gallery
+
+```tsx
+import { CoverFlow } from "ausdata-swiper";
+
+export default function CoverFlowExample() {
+  const images = [
+    "/img/1.jpg", 
+    "/img/2.jpg", 
+    "/img/3.jpg",
+    "/img/4.jpg",
+  ];
+
+  return (
+    <div style={{ maxWidth: 1000, margin: "0 auto" }}>
+      <CoverFlow
+        images={images}
+        initialIndex={1}
+        enableAutoPlay={true}
+        autoPlayInterval={2000}
+        transitionDuration={600}
+        slidesPerView={3}
+        visibleSlides={3}
+        onIndexChange={(index) => console.log('CoverFlow changed to:', index)}
       />
     </div>
   );
@@ -117,6 +147,20 @@ export default function LightboxExample() {
 - `showCounter?: boolean` – show image counter (default: false)
 - `slidesPerView?: number` – number of slides per view (default: 1)
 - `spaceBetween?: number` – space between slides in px (default: 0)
+
+#### CoverFlow Component
+
+- `images: string[]` – required list of image URLs
+- `initialIndex?: number` – initial slide index (default: 0)
+- `onIndexChange?: (index: number) => void` – callback when active slide changes
+- `className?: string` – wrapper className
+- `imageAlt?: (index: number) => string` – alt generator per image
+- `enableAutoPlay?: boolean` – enable auto-play (default: false)
+- `autoPlayInterval?: number` – auto-play interval in ms (default: 3000)
+- `transitionDuration?: number` – transition duration in ms (default: 300)
+- `slidesPerView?: number` – number of slides visible (default: 3)
+- `spaceBetween?: number` – space between slides in px (default: 30)
+- `height?: string | number` – container height (default: 400)
 
 #### BeforeAfter Component
 

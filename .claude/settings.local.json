@@ -2,7 +2,14 @@
   "permissions": {
     "allow": [
       "WebSearch",
-      "WebFetch(domain:swiperjs.com)"
+      "WebFetch(domain:swiperjs.com)",
+      "Read(//c/Users/User/Documents/Github_Ausdata/ausdata-swiper-test/src/app/coverflow-test/**)",
+      "Read(//c/Users/User/Documents/Github_Ausdata/ausdata-swiper-test/node_modules/@ausdata/swiper/dist/**)",
+      "Bash(npm run build:*)",
+      "Bash(move:*)",
+      "Bash(npm pack:*)",
+      "Read(//c/Users/User/Documents/Github_Ausdata/ausdata-swiper-test/**)",
+      "Bash(npm install:*)"
     ],
     "deny": [],
     "ask": []
