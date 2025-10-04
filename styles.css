@@ -12,4 +12,55 @@
   --ausdata-accent-color: #ff6b6b;
 }
 
+/* Card Swiper Styles */
+.card-swiper-container {
+  width: 100%;
+  position: relative;
+}
+
+.card-swiper {
+  width: 100%;
+  height: 100%;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.card-slide-content {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  background: #f3f4f6;
+}
+
+.card-swiper .swiper-pagination-bullet {
+  background: rgba(255, 255, 255, 0.5);
+  opacity: 1;
+}
+
+.card-swiper .swiper-pagination-bullet-active {
+  background: #3b82f6;
+}
+
+.card-swiper .swiper-button-next,
+.card-swiper .swiper-button-prev {
+  color: #ffffff;
+  background: rgba(0, 0, 0, 0.5);
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  margin-top: -20px;
+}
+
+.card-swiper .swiper-button-next:after,
+.card-swiper .swiper-button-prev:after {
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.card-swiper .swiper-button-next:hover,
+.card-swiper .swiper-button-prev:hover {
+  background: rgba(0, 0, 0, 0.7);
+}
+
 

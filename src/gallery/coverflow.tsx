@@ -13,10 +13,10 @@ export interface CoverFlowProps {
   slidesPerView?: number;
   spaceBetween?: number;
   height?: string | number;
-  // CoverFlow specific props
   rotate?: number;
   stretch?: number;
   depth?: number;
+  scale?: number;
   modifier?: number;
   slideShadows?: boolean;
   grabCursor?: boolean;
@@ -32,23 +32,20 @@ const CoverFlow: React.FC<CoverFlowProps> = ({
   autoPlayInterval = 3000,
   transitionDuration = 300,
   slidesPerView = 3,
-  spaceBetween = 30,
   height = 400,
-  // CoverFlow specific
   rotate = 50,
   stretch = 0,
   depth = 100,
+  scale = 1,
   modifier = 1,
   slideShadows = true,
   grabCursor = true,
 }) => {
   const [activeIndex, setActiveIndex] = useState(initialIndex);
   const [isPaused, setIsPaused] = useState(false);
-  const [isTransitioning, setIsTransitioning] = useState(false);
   const autoPlayRef = useRef<number | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Clear auto-play
   const clearAutoPlay = useCallback(() => {
     if (autoPlayRef.current) {
       clearInterval(autoPlayRef.current);
@@ -56,17 +53,13 @@ const CoverFlow: React.FC<CoverFlowProps> = ({
     }
   }, []);
 
-  // Navigate functions
   const goToIndex = useCallback((newIndex: number) => {
     if (newIndex < 0) newIndex = images.length - 1;
     if (newIndex >= images.length) newIndex = 0;
     
-    setIsTransitioning(true);
     setActiveIndex(newIndex);
     onIndexChange?.(newIndex);
-    
-    setTimeout(() => setIsTransitioning(false), transitionDuration);
-  }, [images.length, onIndexChange, transitionDuration]);
+  }, [images.length, onIndexChange]);
 
   const goToNext = useCallback(() => {
     const nextIndex = activeIndex >= images.length - 1 ? 0 : activeIndex + 1;
@@ -78,98 +71,36 @@ const CoverFlow: React.FC<CoverFlowProps> = ({
     goToIndex(prevIndex);
   }, [activeIndex, goToIndex]);
 
-  // Auto-play
   const startAutoPlay = useCallback(() => {
     if (!enableAutoPlay || images.length <= 1 || isPaused) return;
     
     clearAutoPlay();
-    autoPlayRef.current = window.setInterval(() => {
+    autoPlayRef.current = setInterval(() => {
       if (!isPaused) goToNext();
     }, autoPlayInterval);
   }, [enableAutoPlay, images.length, isPaused, autoPlayInterval, goToNext, clearAutoPlay]);
 
-  // Touch handling (drag support)
-  const [dragStart, setDragStart] = useState<{ x: number; y: number } | null>(null);
-  const [dragCurrent, setDragCurrent] = useState<{ x: number; y: number } | null>(null);
-  const [isDragging, setIsDragging] = useState(false);
-
-  const handleMouseDown = (e: React.MouseEvent) => {
-    if (enableAutoPlay) setIsPaused(true);
-    setDragStart({ x: e.clientX, y: e.clientY });
-    setDragCurrent({ x: e.clientX, y: e.clientY });
-    setIsDragging(true);
-  };
-
-  const handleMouseMove = (e: React.MouseEvent) => {
-    if (!isDragging || !dragStart) return;
-    setDragCurrent({ x: e.clientX, y: e.clientY });
-  };
-
-  const handleMouseUp = () => {
-    if (!isDragging || !dragStart || !dragCurrent) {
-      setIsDragging(false);
-      if (enableAutoPlay) setIsPaused(false);
-      return;
-    }
-
-    const deltaX = dragStart.x - dragCurrent.x;
-    const deltaY = Math.abs(dragStart.y - dragCurrent.y);
-    
-    // Only trigger horizontal swipes
-    if (Math.abs(deltaX) > 50 && deltaY < 100) {
-      if (deltaX > 0) {
-        goToNext();
-      } else {
-        goToPrev();
-      }
-    }
-
-    setIsDragging(false);
-    setDragStart(null);
-    setDragCurrent(null);
-    
-    if (enableAutoPlay) {
-      setTimeout(() => setIsPaused(false), transitionDuration);
-    }
-  };
-
   const handleTouchStart = (e: React.TouchEvent) => {
     if (enableAutoPlay) setIsPaused(true);
-    setDragStart({ x: e.touches[0].clientX, y: e.touches[0].clientY });
-    setDragCurrent({ x: e.touches[0].clientX, y: e.touches[0].clientY });
-  };
-
-  const handleTouchMove = (e: React.TouchEvent) => {
-    if (!dragStart) return;
-    setDragCurrent({ x: e.touches[0].clientX, y: e.touches[0].clientY });
   };
 
   const handleTouchEnd = (e: React.TouchEvent) => {
-    if (!dragStart || !dragCurrent) {
-      if (enableAutoPlay) setIsPaused(false);
-      return;
-    }
-
-    const deltaX = dragStart.x - dragCurrent.x;
-    const deltaY = Math.abs(dragStart.y - dragCurrent.y);
+    const startX = e.changedTouches[0].clientX;
+    const startY = e.changedTouches[0].clientY;
     
-    if (Math.abs(deltaX) > 50 && deltaY < 100) {
-      if (deltaX > 0) {
+    if (Math.abs(startX) > 50) {
+      if (startX < 0) {
         goToNext();
       } else {
         goToPrev();
       }
     }
 
-    setDragStart(null);
-    setDragCurrent(null);
-    
     if (enableAutoPlay) {
       setTimeout(() => setIsPaused(false), transitionDuration);
     }
   };
 
-  // Keyboard handling
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (enableAutoPlay) setIsPaused(true);
     
@@ -197,7 +128,54 @@ const CoverFlow: React.FC<CoverFlowProps> = ({
     }
   };
 
-  // Effects
+  const getRotateFix = (value: number) => {
+    const roundValue = Math.round(value * 100000) / 100000;
+    if (Math.abs(roundValue) < 0.001) return 0;
+    return roundValue;
+  };
+
+  // Swiper.js CoverFlow algorithm
+  const getCoverFlowTransform = (index: number) => {
+    const containerWidth = containerRef.current?.offsetWidth || 800;
+    const containerHeight = containerRef.current?.offsetHeight || 400;
+    const isHorizontal = true;
+    
+    const slideWidth = containerWidth / slidesPerView;
+    const transform = -activeIndex * slideWidth;
+    const center = -transform + containerWidth / 2;
+    
+    const offset = index - activeIndex;
+    const slideOffset = offset * slideWidth;
+    const slideSize = slideWidth;
+    const centerOffset = (center - slideOffset - slideSize / 2) / slideSize;
+    const offsetMultiplier = centerOffset * modifier;
+    
+    let rotateY = isHorizontal ? rotate * offsetMultiplier : 0;
+    let rotateX = isHorizontal ? 0 : rotate * offsetMultiplier;
+    let translateZ = -depth * Math.abs(offsetMultiplier);
+    let translateY = isHorizontal ? 0 : stretch * offsetMultiplier;
+    let translateX = isHorizontal ? stretch * offsetMultiplier : 0;
+    let scaleValue = 1 - (1 - scale) * Math.abs(offsetMultiplier);
+
+    // Fix for ultra small values
+    if (Math.abs(translateX) < 0.001) translateX = 0;
+    if (Math.abs(translateY) < 0.001) translateY = 0;
+    if (Math.abs(translateZ) < 0.001) translateZ = 0;
+    if (Math.abs(rotateY) < 0.001) rotateY = 0;
+    if (Math.abs(rotateX) < 0.001) rotateX = 0;
+    if (Math.abs(scaleValue) < 0.001) scaleValue = 0;
+
+    const rotateXFixed = getRotateFix(rotateX);
+    const rotateYFixed = getRotateFix(rotateY);
+    
+    return {
+      transform: `translate3d(${translateX}px,${translateY}px,${translateZ}px) rotateX(${rotateXFixed}deg) rotateY(${rotateYFixed}deg) scale(${scaleValue})`,
+      zIndex: -Math.abs(Math.round(offsetMultiplier)) + 1,
+      opacity: Math.abs(offsetMultiplier) > 3 ? 0 : 1,
+      transition: `all ${transitionDuration}ms cubic-bezier(0.4, 0, 0.2, 1)`,
+    };
+  };
+
   useEffect(() => {
     if (enableAutoPlay && images.length > 1) {
       startAutoPlay();
@@ -208,12 +186,12 @@ const CoverFlow: React.FC<CoverFlowProps> = ({
   }, [enableAutoPlay, images.length, startAutoPlay, clearAutoPlay]);
 
   useEffect(() => {
-    if (enableAutoPlay && images.length > 1 && !isPaused && !isTransitioning) {
+    if (enableAutoPlay && images.length > 1 && !isPaused) {
       startAutoPlay();
     } else {
       clearAutoPlay();
     }
-  }, [isPaused, isTransitioning, enableAutoPlay, images.length, startAutoPlay, clearAutoPlay]);
+  }, [isPaused, enableAutoPlay, images.length, startAutoPlay, clearAutoPlay]);
 
   useEffect(() => {
     setActiveIndex(initialIndex);
@@ -221,97 +199,28 @@ const CoverFlow: React.FC<CoverFlowProps> = ({
 
   if (!images?.length) return null;
 
-  const containerHeight = typeof height === 'number' ? `${height}px` : height;
-  const centerSlide = Math.floor(slidesPerView / 2);
-  
-  // Correct CoverFlow positioning algorithm  
-  const getCoverFlowTransform = (index: number) => {
-    const offset = index - activeIndex;
-    const visibleRange = Math.floor(slidesPerView / 2);
-    
-    // Hide slides outside visible range
-    if (Math.abs(offset) > visibleRange) {
-      return {
-        opacity: 0,
-        transform: `translateX(${offset > 0 ? 150 : -150}%) rotateY(${offset > 0 ? 30 : -30}deg)`,
-        transformOrigin: 'center center',
-      };
-    }
-    
-    // Calculate positions - this is the key fix!
-    // Center slide (offset = 0) stays at center
-    // Side slides move away from center with rotation
-    let translateX = 0;
-    let rotateY = 0;
-    let translateZ = 0;
-    let scale = 1;
-    let opacity = 1;
-    
-    if (offset === 0) {
-      // Center slide - no transformation needed
-      translateX = 0;
-      rotateY = 0;
-      translateZ =  depth;
-      scale = 1;
-      opacity = 1;
-    } else {
-      // Side slides - position them correctly
-      const slideWidth = 320; // Width of each slide
-      const spacing = 80; // Space between slides
-      
-      // Move slides outward from center
-      translateX = offset * (slideWidth + spacing);
-      
-      // Rotate side slides inward toward center
-      rotateY = -offset * (rotate / visibleRange) * modifier;
-      
-      // Push side slides back in depth
-      translateZ = depth - Math.abs(offset) * (depth / visibleRange);
-      
-      // Scale down side slides
-      scale = 1 - Math.abs(offset) * 0.15;
-      
-      // Reduce opacity for non-center slides
-      opacity = Math.max(0.6, 1 - Math.abs(offset) * 0.2);
-    }
-    
-    return {
-      opacity,
-      transform: `translateX(${translateX}px) rotateY(${rotateY}deg) translateZ(${translateZ}px) scale(${scale})`,
-      transformOrigin: 'center center',
-      transition: isTransitioning ? `all ${transitionDuration}ms cubic-bezier(0.4, 0, 0.2, 1)` : 'none',
-    };
-  };
+  const containerHeightStyle = typeof height === 'number' ? `${height}px` : height;
 
   return (
     <div 
       ref={containerRef}
-      className={`coverflow-container relative w-full ${className}`}
+      className={`coverflow-container group relative w-full ${className}`}
       tabIndex={0}
       onKeyDown={handleKeyDown}
       style={{ 
         outline: 'none',
-        height: containerHeight,
-        perspective: '1200px',
+        height: containerHeightStyle,
+        perspective: '1000px',
         cursor: grabCursor ? 'grab' : 'default',
       }}
       role="region"
       aria-label="CoverFlow image gallery"
       onMouseEnter={() => enableAutoPlay && setIsPaused(true)}
-      onMouseLeave={() => {
-        enableAutoPlay && setIsPaused(false);
-        setIsDragging(false);
-      }}
-      onMouseDown={handleMouseDown}
-      onMouseMove={handleMouseMove}
-      onMouseUp={handleMouseUp}
+      onMouseLeave={() => enableAutoPlay && setIsPaused(false)}
       onTouchStart={handleTouchStart}
-      onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
     >
-      {/* CoverFlow main container */}
       <div className="relative w-full h-full overflow-hidden">
-        {/* Slides container */}
         <div 
           className="coverflow-wrapper relative h-full"
           style={{
@@ -319,35 +228,37 @@ const CoverFlow: React.FC<CoverFlowProps> = ({
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            width: '200%', // Wider container to accommodate side slides
-            left: '-50%', // Center the wider container
-            position: 'absolute',
           }}
         >
-          {/* Individual slides */}
           {images.map((image, index) => {
             const slideTransform = getCoverFlowTransform(index);
             
             return (
               <div
                 key={index}
-                className="coverflow-slide absolute cursor-pointer"
+                className={`coverflow-slide absolute cursor-pointer ${slideTransform.opacity === 0 ? 'pointer-events-none' : ''}`}
                 style={{
                   ...slideTransform,
-                  position: 'absolute',
                   left: '50%',
                   transformOrigin: 'center center',
-                  width: '320px',
+                  width: '300px',
                   height: '80%',
-                  marginLeft: '-160px', // Half of slide width
-                  zIndex: slideTransform.opacity > 0 ? (centerSlide - Math.abs(index - activeIndex) + 10) : 0,
+                  marginLeft: '-150px',
+                  minWidth: '300px',
+                  minHeight: '240px',
                 }}
                 onClick={() => goToIndex(index)}
               >
-                <div className="relative w-full h-full group">
+                <div style={{ width: '100%', height: '100%', position: 'relative' }}>
                   <div 
-                    className="relative w-full h-full border-2 border-white/30 rounded-xl overflow-hidden bg-gray-100"
                     style={{
+                      width: '100%',
+                      height: '100%',
+                      aspectRatio: '3 / 2',
+                      background: '#000',
+                      borderRadius: '12px',
+                      overflow: 'hidden',
+                      border: '2px solid rgba(255, 255, 255, 0.3)',
                       boxShadow: slideShadows && slideTransform.opacity > 0 
                         ? '0 15px 35px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.2)' 
                         : 'none',
@@ -356,19 +267,38 @@ const CoverFlow: React.FC<CoverFlowProps> = ({
                     <img
                       src={image}
                       alt={imageAlt ? imageAlt(index) : `CoverFlow image ${index + 1}`}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      style={{
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'cover',
+                        display: 'block',
+                        background: '#000'
+                      }}
                       draggable={false}
                       loading="lazy"
                     />
                     
-                    {/* Active slide indicator */}
                     {index === activeIndex && (
-                      <div className="absolute inset-0 ring-2 ring-blue-500 ring-inset pointer-events-none" />
+                      <div style={{
+                        position: 'absolute',
+                        inset: 0,
+                        border: '2px solid #3b82f6',
+                        borderRadius: '12px',
+                        pointerEvents: 'none'
+                      }} />
                     )}
                   </div>
                   
-                  {/* Slide number */}
-                  <div className="absolute bottom-2 right-2 bg-black/50 text-white text-xs px-2 py-1 rounded">
+                  <div style={{
+                    position: 'absolute',
+                    bottom: '8px',
+                    right: '8px',
+                    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                    color: 'white',
+                    fontSize: '12px',
+                    padding: '4px 8px',
+                    borderRadius: '4px'
+                  }}>
                     {index + 1}
                   </div>
                 </div>
@@ -377,7 +307,6 @@ const CoverFlow: React.FC<CoverFlowProps> = ({
           })}
         </div>
         
-        {/* Navigation arrows */}
         <button
           className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white border border-gray-300 rounded-full p-3 shadow-lg z-10 transition-all duration-200 opacity-0 group-hover:opacity-100"
           onClick={goToPrev}
@@ -397,18 +326,8 @@ const CoverFlow: React.FC<CoverFlowProps> = ({
             <path d="M9 18l6-6-6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
         </button>
-        
-        {/* Drag indicator */}
-        {isDragging && dragStart && dragCurrent && (
-          <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
-            <div className="bg-white/20 border border-white/50 rounded-full px-4 py-2 text-white text-sm font-medium backdrop-blur-sm">
-              {dragStart.x > dragCurrent.x ? '→ 下一张' : '← 上一张'}
-            </div>
-          </div>
-        )}
       </div>
       
-      {/* Progress dots */}
       {images.length > 1 && (
         <div className="progress-dots flex justify-center space-x-2 mt-6">
           {images.map((_, index) => (
@@ -426,7 +345,6 @@ const CoverFlow: React.FC<CoverFlowProps> = ({
         </div>
       )}
       
-      {/* Slide counter and info */}
       <div className="text-center text-sm text-gray-600 mt-2 font-medium">
         {activeIndex + 1} / {images.length} 
         {enableAutoPlay && ' • Auto: ON'} 

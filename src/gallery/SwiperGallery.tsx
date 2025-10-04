@@ -12,7 +12,7 @@ export interface SwiperGalleryProps {
   imageAlt?: (index: number) => string;
 }
 
-export const SwiperGallery: React.FC<SwiperGalleryProps> = ({
+const SwiperGallery: React.FC<SwiperGalleryProps> = ({
   images,
   initialIndex = 0,
   onIndexChange,
@@ -65,4 +65,4 @@ export const SwiperGallery: React.FC<SwiperGalleryProps> = ({
   );
 };
 
-
+export default SwiperGallery;

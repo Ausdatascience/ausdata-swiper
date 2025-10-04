@@ -43,6 +43,6 @@
     "typescript": "^5.9.2"
   },
   "dependencies": {
-    "@ausdata/swiper": "file:ausdata-swiper-0.1.0.tgz"
+    "swiper": "^12.0.2"
   }
 }
